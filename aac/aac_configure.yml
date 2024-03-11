@@ -32,6 +32,20 @@
       changed_when: false
       register: credential_source_control
 
+    - name: Create a github type credential
+      awx.awx.credential:
+        controller_host: "{{ controller_host }}"
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        name: "{{ controller_organization }}"
+        organization: "{{ organization.id }}"
+        credential_type: "GitHub Personal Access Token"
+        state: present
+        inputs:
+          token: "{{ github_pat_token }}"
+      changed_when: false
+      register: credential_github
+
+
     - name: Create Project
       awx.awx.project:
         controller_host: "{{ controller_host }}"
@@ -47,4 +61,16 @@
         scm_credential: "{{ credential_source_control.id }}"
       register: project
 
+    - name: Create job template for CI
+      awx.awx.job_template:
+        controller_host: "{{ controller_host }}"
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        name: "{{ controller_organization }}-ci"
+        inventory: "Demo Inventory"
+        project: "{{ project.id }}"
+        playbook: "ci.yml"
+        credentials: "{{ credential_github.id }}"
+        state: "present"
+        concurrent_jobs_enabled: true
+      register: job_template_ci
 

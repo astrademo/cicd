@@ -13,4 +13,4 @@ tasks:
                               -v $PWD/.ssh/:/root/.ssh/:ro \
                               -it {{.EE_IMAGE}} \
                               /bin/bash -c \
-                              'ansible-playbook aac/aac_configure.yml -e ee_image="{{.EE_IMAGE}}" -e controller_host="{{.CONTROLLER_HOST}}" -e controller_oauthtoken="{{.CONTROLLER_OAUTHTOKEN}}" -e controller_organization="{{.CONTROLLER_ORGANIZATION}}" -e project_url="{{.PROJECT_URL}}"'
+                              'ansible-playbook aac/aac_configure.yml -e ee_image="{{.EE_IMAGE}}" -e controller_host="{{.CONTROLLER_HOST}}" -e controller_oauthtoken="{{.CONTROLLER_OAUTHTOKEN}}" -e controller_organization="{{.CONTROLLER_ORGANIZATION}}" -e project_url="{{.PROJECT_URL}}" -e github_pat_token="{{.GITHUB_PAT_TOKEN}}"'
