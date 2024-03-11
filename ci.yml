@@ -3,6 +3,6 @@
   become: false
   gather_facts: false
   tasks:
-    - debug:
+    - debugFAIL:
         var: vars
         
