@@ -4,4 +4,4 @@
   gather_facts: false
   tasks:
     - debug:
-        msg: "I am here"
+        var: vars

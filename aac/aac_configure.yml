@@ -1,0 +1,50 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Create organization
+      awx.awx.organization:
+        controller_host: "{{ controller_host }}"
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        name: "{{ controller_organization }}"
+        state: present
+        galaxy_credentials:
+          - Ansible Galaxy
+      register: organization
+
+    - name: Create execution environment
+      awx.awx.execution_environment:
+        controller_host: "{{ controller_host }}"
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        name: "{{ controller_organization }}"
+        image: "{{ ee_image }}"
+      register: execution_environment
+
+    - name: Create a source control type credential
+      awx.awx.credential:
+        controller_host: "{{ controller_host }}"
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        name: "{{ controller_organization }}"
+        organization: "{{ organization.id }}"
+        credential_type: "Source Control"
+        state: present
+        inputs:
+          ssh_key_data: "{{ lookup('file', '/root/.ssh/id_rsa') }}"
+      changed_when: false
+      register: credential_source_control
+
+    - name: Create Project
+      awx.awx.project:
+        controller_host: "{{ controller_host }}"
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        name: "{{ controller_organization }}"
+        organization: "{{ organization.id }}"
+        scm_update_on_launch: True
+        scm_update_cache_timeout: 60
+        state: present
+        default_environment: "{{ execution_environment.id }}"
+        scm_type: "git"
+        scm_url: "{{ project_url }}"
+        scm_credential: "{{ credential_source_control.id }}"
+      register: project
+
+
