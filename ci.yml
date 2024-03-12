@@ -6,4 +6,4 @@
     - debug:
         var: awx_webhook_payload
     - debug:
-        var: awx_webhook_payload.pull_request.head.repo.git_url
+        var: awx_webhook_payload.repository.ssh_url
