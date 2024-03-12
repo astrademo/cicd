@@ -3,7 +3,7 @@
   become: false
   gather_facts: false
   tasks:
-    - debug:
+    - debugFAIL:
         var: awx_webhook_payload
     - debug:
         var: awx_webhook_payload.repository.ssh_url
