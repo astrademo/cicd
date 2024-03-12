@@ -4,4 +4,6 @@
   gather_facts: false
   tasks:
     - debug:
-        var: vars
+        var: awx_webhook_payload
+    - debug:
+        var: awx_webhook_payload.pull_request.head.repo.git_url

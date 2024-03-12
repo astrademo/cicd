@@ -52,13 +52,14 @@
         controller_oauthtoken: "{{ controller_oauthtoken }}"
         name: "{{ controller_organization }}"
         organization: "{{ organization.id }}"
-        scm_update_on_launch: True
+        scm_update_on_launch: true 
         scm_update_cache_timeout: 60
         state: present
         default_environment: "{{ execution_environment.id }}"
         scm_type: "git"
         scm_url: "{{ project_url }}"
         scm_credential: "{{ credential_source_control.id }}"
+        allow_override: true
       register: project
 
     - name: Create job template for CI
@@ -69,7 +70,8 @@
         inventory: "Demo Inventory"
         project: "{{ project.id }}"
         playbook: "ci.yml"
-        credentials: "{{ credential_github.id }}"
+        webhook_service: "github"
+        webhook_credential: "{{ credential_github.id }}"
         state: "present"
         concurrent_jobs_enabled: true
       register: job_template_ci
