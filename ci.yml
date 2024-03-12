@@ -14,3 +14,4 @@
         dest: /tmp/
         single_branch: yes
         version: "{{ awx_webhook_payload.after }}"
+

@@ -32,6 +32,19 @@
       changed_when: false
       register: credential_source_control
 
+    - name: Create a machine type credential
+      awx.awx.credential:
+        controller_host: "{{ controller_host }}"
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        name: "{{ controller_organization }}"
+        organization: "{{ organization.id }}"
+        credential_type: "Machine"
+        state: present
+        inputs:
+          ssh_key_data: "{{ lookup('file', '/root/.ssh/id_rsa') }}"
+      changed_when: false
+      register: credential_machine
+
     - name: Create a github type credential
       awx.awx.credential:
         controller_host: "{{ controller_host }}"
@@ -72,6 +85,7 @@
         playbook: "ci.yml"
         webhook_service: "github"
         webhook_credential: "{{ credential_github.id }}"
+        credentials: "{{ credential_machine.id }}"
         state: "present"
         concurrent_jobs_enabled: true
       register: job_template_ci
