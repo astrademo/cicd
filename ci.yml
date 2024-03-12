@@ -13,4 +13,4 @@
         repo: "{{ awx_webhook_payload.repository.ssh_url }}"
         dest: /tmp/
         single_branch: yes
-        version: "{{ awx_webhook_payload.commits.id }}"
+        version: "{{ awx_webhook_payload.after }}"
