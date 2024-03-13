@@ -10,7 +10,7 @@
 
     - name: Clone repo
       ansible.builtin.git:
-       repo: "{{ awx_webhook_payload.repository.ssh_url }}"
+       repo: "{{ awx_webhook_payload.repository.clone_url }}"
        dest: /tmp/
        single_branch: yes
        version: "{{ awx_webhook_event_ref }}"
