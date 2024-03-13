@@ -9,3 +9,6 @@
        dest: /tmp/project
        version: "{{ awx_webhook_event_ref }}"
 
+    - name: Check main project
+      ansible.builtin.shell:
+        cmd: ../project.sh
