@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Uncomment "true" to simulate correct code
-true
-
-# Uncomment "false" to simulate incorrect code
-#false
+# Use "exit 0" to simulate correct code
+# Use "exit 1" to simulate incorrect code
+exit 0 
