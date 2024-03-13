@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Uncomment "true" to simulate correct code
-true
+#true
 
 # Uncomment "false" to simulate incorrect code
-#false
+false
