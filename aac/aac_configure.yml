@@ -19,32 +19,6 @@
         image: "{{ ee_image }}"
       register: execution_environment
 
-    - name: Create a source control type credential
-      awx.awx.credential:
-        controller_host: "{{ controller_host }}"
-        controller_oauthtoken: "{{ controller_oauthtoken }}"
-        name: "{{ controller_organization }}"
-        organization: "{{ organization.id }}"
-        credential_type: "Source Control"
-        state: present
-        inputs:
-          ssh_key_data: "{{ lookup('file', '/root/.ssh/id_rsa') }}"
-      changed_when: false
-      register: credential_source_control
-
-    - name: Create a machine type credential
-      awx.awx.credential:
-        controller_host: "{{ controller_host }}"
-        controller_oauthtoken: "{{ controller_oauthtoken }}"
-        name: "{{ controller_organization }}"
-        organization: "{{ organization.id }}"
-        credential_type: "Machine"
-        state: present
-        inputs:
-          ssh_key_data: "{{ lookup('file', '/root/.ssh/id_rsa') }}"
-      changed_when: false
-      register: credential_machine
-
     - name: Create a github type credential
       awx.awx.credential:
         controller_host: "{{ controller_host }}"
@@ -58,7 +32,6 @@
       changed_when: false
       register: credential_github
 
-
     - name: Create Project
       awx.awx.project:
         controller_host: "{{ controller_host }}"
@@ -71,7 +44,6 @@
         default_environment: "{{ execution_environment.id }}"
         scm_type: "git"
         scm_url: "{{ project_url }}"
-        scm_credential: "{{ credential_source_control.id }}"
         allow_override: true
       register: project
 
@@ -79,14 +51,12 @@
       awx.awx.job_template:
         controller_host: "{{ controller_host }}"
         controller_oauthtoken: "{{ controller_oauthtoken }}"
-        name: "{{ controller_organization }}-ci"
+        name: "ci"
         inventory: "Demo Inventory"
         project: "{{ project.id }}"
-        playbook: "ci.yml"
+        playbook: "aac/ci.yml"
         webhook_service: "github"
         webhook_credential: "{{ credential_github.id }}"
-        credentials: "{{ credential_machine.id }}"
         state: "present"
         concurrent_jobs_enabled: true
       register: job_template_ci
-
