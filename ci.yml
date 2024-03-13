@@ -13,5 +13,5 @@
        repo: "{{ awx_webhook_payload.repository.ssh_url }}"
        dest: /tmp/
        single_branch: yes
-       version: "{{ awx_webhook_payload.after }}"
+       version: "{{ awx_webhook_event_ref }}"
 
