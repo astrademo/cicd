@@ -11,8 +11,10 @@
 
     - name: Show main project
       ansible.builtin.shell:
+        chdir: /tmp/project
         cmd: cat ../project.sh
 
     - name: Check main project
       ansible.builtin.shell:
+        chdir: /tmp/project
         cmd: ../project.sh
