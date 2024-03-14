@@ -1,0 +1,9 @@
+---
+- hosts: localhost
+  become: false
+  gather_facts: false
+  tasks:
+    - name: Check if push is into master branch
+      ansible.builtin.fail:
+        msg: This push is not into master branch
+      when: awx_webhook_payload.ref != "refs/heads/master"

@@ -1,0 +1,8 @@
+---
+- hosts: localhost
+  become: false
+  gather_facts: false
+  tasks:
+    - name: Deploy project
+      ansible.builtin.debug:
+        msg: The project is being deployed.

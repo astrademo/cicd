@@ -1,0 +1,18 @@
+---
+# https://taskfile.dev
+
+version: '3'
+silent: true
+
+dotenv:
+  - .config
+
+includes:
+  aac:
+    taskfile: ".taskfiles/aac.yml"
+    internal: true
+
+tasks:
+  configure-controller:
+    cmds:
+      - task: aac:configure_controller

@@ -1,0 +1,20 @@
+---
+- hosts: localhost
+  become: false
+  gather_facts: false
+  tasks:
+    - name: Get code revision "{{ awx_webhook_event_ref }}"
+      ansible.builtin.git:
+       repo: "{{ awx_webhook_payload.repository.clone_url }}"
+       dest: /tmp/project
+       version: "{{ awx_webhook_event_ref }}"
+
+    - name: Show main project
+      ansible.builtin.shell:
+        chdir: /tmp/project
+        cmd: cat ./project.sh
+
+    - name: Check main project
+      ansible.builtin.shell:
+        chdir: /tmp/project
+        cmd: ./project.sh

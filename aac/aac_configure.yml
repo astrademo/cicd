@@ -1,0 +1,148 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Create organization
+      awx.awx.organization:
+        controller_host: "{{ controller_host }}"
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        name: "{{ controller_organization }}"
+        state: present
+        galaxy_credentials:
+          - Ansible Galaxy
+      register: organization
+
+    - name: Create execution environment
+      awx.awx.execution_environment:
+        controller_host: "{{ controller_host }}"
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        name: "{{ controller_organization }}"
+        image: "{{ ee_image }}"
+      register: execution_environment
+
+    - name: Create a github type credential
+      awx.awx.credential:
+        controller_host: "{{ controller_host }}"
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        name: "{{ controller_organization }}"
+        organization: "{{ organization.id }}"
+        credential_type: "GitHub Personal Access Token"
+        state: present
+        inputs:
+          token: "{{ github_pat_token }}"
+      changed_when: false
+      register: credential_github
+
+    - name: Create Project
+      awx.awx.project:
+        controller_host: "{{ controller_host }}"
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        name: "{{ controller_organization }}"
+        organization: "{{ organization.id }}"
+        state: present
+        default_environment: "{{ execution_environment.id }}"
+        scm_type: "git"
+        scm_url: "{{ project_url }}"
+        scm_clean: true
+      register: project
+
+    - name: Create job template for CI
+      awx.awx.job_template:
+        controller_host: "{{ controller_host }}"
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        organization: "{{ organization.id }}"
+        name: "ci"
+        inventory: "Demo Inventory"
+        project: "{{ project.id }}"
+        playbook: "aac/ci.yml"
+        webhook_service: "github"
+        webhook_credential: "{{ credential_github.id }}"
+        state: "present"
+        concurrent_jobs_enabled: true
+      register: job_template_ci
+
+    - name: Create job template for CD check
+      awx.awx.job_template:
+        controller_host: "{{ controller_host }}"
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        organization: "{{ organization.id }}"
+        name: "cd_check"
+        inventory: "Demo Inventory"
+        project: "{{ project.id }}"
+        playbook: "aac/cd_check.yml"
+        state: "present"
+        concurrent_jobs_enabled: true
+      register: job_template_cd_check
+
+    - name: Create job template for CD deploy
+      awx.awx.job_template:
+        controller_host: "{{ controller_host }}"
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        organization: "{{ organization.id }}"
+        name: "cd_deploy"
+        inventory: "Demo Inventory"
+        project: "{{ project.id }}"
+        playbook: "aac/cd_deploy.yml"
+        state: "present"
+        concurrent_jobs_enabled: true
+      register: job_template_cd_deploy
+
+    - name: Create a CD workflow job template
+      awx.awx.workflow_job_template:
+        controller_host: "{{ controller_host }}"
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        name: "cd"
+        organization: "{{ organization.id }}"
+        inventory: "Demo Inventory"
+        allow_simultaneous: true
+        webhook_service: "github"
+        webhook_credential: "{{ credential_github.id }}"
+        state: "present"
+      register: workflow
+        
+    - name: Create CD check node
+      awx.awx.workflow_job_template_node:
+        controller_host: "{{ controller_host }}"
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        identifier: "CD check"
+        workflow_job_template: "{{ workflow.id }}"
+        unified_job_template: "{{ job_template_cd_check.id }}"
+        organization: "{{ organization.id }}"
+
+    - name: Create a workflow approval node
+      awx.awx.workflow_job_template_node:
+        controller_host: "{{ controller_host }}"
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        identifier: "Согласование"
+        approval_node:
+          name: "Согласование деплоя"
+        workflow_job_template: "{{ workflow.id }}"
+
+    - name: Create CD deploy node
+      awx.awx.workflow_job_template_node:
+        controller_host: "{{ controller_host }}"
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        identifier: "CD deploy"
+        workflow_job_template: "{{ workflow.id }}"
+        unified_job_template: "{{ job_template_cd_deploy.id }}"
+        organization: "{{ organization.id }}"
+
+    - name: Link "CD check" to "Согласование"
+      awx.awx.workflow_job_template_node:
+        controller_host: "{{ controller_host }}"
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        identifier: "CD check"
+        workflow_job_template: "{{ workflow.id }}"
+        organization: "{{ organization.id }}"
+        success_nodes:
+          - "Согласование"
+
+    - name: Link "Согласование" to "CD deploy"
+      awx.awx.workflow_job_template_node:
+        controller_host: "{{ controller_host }}"  
+        controller_oauthtoken: "{{ controller_oauthtoken }}"
+        identifier: "Согласование"
+        workflow_job_template: "{{ workflow.id }}"
+        organization: "{{ organization.id }}"
+        success_nodes:
+          - "CD deploy"
+            
