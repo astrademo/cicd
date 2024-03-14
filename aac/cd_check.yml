@@ -3,7 +3,7 @@
   become: false
   gather_facts: false
   tasks:
-    - debug:
-        var: awx_webhook_payload 
-    - debug:
-        var: awx_webhook_event_type
+    - name: Check if push is into master branch
+      ansible.builtin.fail:
+        msg: This push is not into master branch
+      when: awx_webhook_payload.ref != "refs/heads/master"
